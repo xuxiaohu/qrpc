@@ -2,7 +2,7 @@ package qrpc
 
 import (
 	"google.golang.org/grpc"
-	pb "qrpc/protos"
+	pb "github.com/xuxiaohu/qrpc/protos"
 	"log"
 	"golang.org/x/net/context"
 	"fmt"
