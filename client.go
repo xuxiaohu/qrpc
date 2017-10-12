@@ -16,7 +16,7 @@ import (
 var (
 	Gconn *grpc.ClientConn
 	ZCollector zipkin.Collector
-	Tracer  zipkin.Tracer
+	Tracer opentracing.Tracer
 )
 
 func InitGConn(addPort, serverName string){
