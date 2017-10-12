@@ -16,6 +16,7 @@ import (
 var (
 	Gconn *grpc.ClientConn
 	ZCollector zipkin.Collector
+	Tracer  zipkin.Tracer
 )
 
 func InitGConn(addPort, serverName string){
@@ -35,6 +36,7 @@ func InitGConn(addPort, serverName string){
 		log.Fatal(err)
 		return
 	}
+	Tracer = tracer
 	opentracing.InitGlobalTracer(tracer)
 
 	conn, err := grpc.Dial("localhost:50051",grpc.WithInsecure(), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
