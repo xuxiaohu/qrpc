@@ -47,6 +47,7 @@ func InitGConn(addPort, serverName string){
 }
 
 func Log(content string, serviceType, serviceFlag, level string){
+	content = funcInfo() + content
 	c := pb.NewLogClient(Gconn)
 
 	r, err := c.Record(context.Background(), &pb.LogRequest{ServiceType: serviceType, ServiceFlag: serviceFlag, Level: level, Content: content})
@@ -61,6 +62,7 @@ func Log(content string, serviceType, serviceFlag, level string){
 }
 
 func RpcLog(content string, serviceType, serviceFlag, level string, logCtx context.Context){
+	content = funcInfo() + content
 	c := pb.NewLogClient(Gconn)
 	oldSpan := opentracing.SpanFromContext(logCtx)
 	var span opentracing.Span
@@ -81,6 +83,7 @@ func RpcLog(content string, serviceType, serviceFlag, level string, logCtx conte
 }
 
 func HttpLog(content string, serviceType, serviceFlag, level string, logCtx context.Context, req *http.Request){
+	content = funcInfo() + content
 	c := pb.NewLogClient(Gconn)
 	var span opentracing.Span
 	wireContext, err := opentracing.GlobalTracer().Extract(
@@ -113,4 +116,9 @@ func Close(){
 func funcName() string {
 	pc, _, _, _ := runtime.Caller(2)
 	return runtime.FuncForPC(pc).Name()
+}
+
+func funcInfo() string {
+	pc, _, line,_  := runtime.Caller(2)
+	return fmt.Sprintf("%s:%d:",runtime.FuncForPC(pc).Name(), line)
 }
