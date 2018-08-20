@@ -17,6 +17,8 @@ var (
 	Gconn *grpc.ClientConn
 	ZCollector zipkin.Collector
 	Tracer opentracing.Tracer
+	ZipkinIpPort  string
+	QLogIpPort    string
 )
 
 func InitGConn(addPort, serverName string){
@@ -40,6 +42,45 @@ func InitGConn(addPort, serverName string){
 	opentracing.InitGlobalTracer(tracer)
 
 	conn, err := grpc.Dial("localhost:50051",grpc.WithInsecure(), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
+	Gconn = conn
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+}
+
+func InitGLogConn(addPort, serverName , zkIpPort, qlogIpPort string){
+	zkUrl := ""
+	if zkIpPort == "" {
+		zkUrl = "http://localhost:9411/api/v1/spans"
+	} else {
+		zkUrl = zkIpPort + "/api/v1/spans"
+	}
+	collector, err := zipkin.NewHTTPCollector(zkUrl)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	ZCollector = collector
+
+	tracer, err := zipkin.NewTracer(
+		zipkin.NewRecorder(collector, false, addPort, serverName),
+		zipkin.ClientServerSameSpan(true),
+		zipkin.TraceID128Bit(true),
+	)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	Tracer = tracer
+	opentracing.InitGlobalTracer(tracer)
+
+	qlogUrl := ""
+	if zkIpPort == "" {
+		qlogUrl = "localhost:50051"
+	} else {
+		qlogUrl = qlogIpPort
+	}
+	conn, err := grpc.Dial(qlogUrl,grpc.WithInsecure(), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
 	Gconn = conn
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
