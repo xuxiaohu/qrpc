@@ -144,7 +144,7 @@ func HttpLog(content string, serviceType, serviceFlag, level string, logCtx cont
 	r, err := c.Record(ctx, &pb.LogRequest{ServiceType: serviceType, ServiceFlag: serviceFlag, Level: level, Content: content})
 	if err != nil {
 		fmt.Println("could not greet: %v", err)
-
+                return
 	}
 	log.Printf("Greeting: %s", r.Status)
 }
